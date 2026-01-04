@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Audio Word Typing Trainer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        sans-serif;
+      background: #050816;
+      color: #f9fafb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      margin: 24px;
+      padding: 24px;
+      border-radius: 24px;
+      background: radial-gradient(circle at top, #111827 0, #020617 55%);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+      text-align: center;
+      letter-spacing: 0.03em;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      text-align: center;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 60px;
+      resize: vertical;
+      border-radius: 16px;
+      border: 1px solid #1f2937;
+      padding: 12px 14px;
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease;
+    }
+
+    textarea:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.6);
+      background: #020617;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 20px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      color: #f9fafb;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.1s ease, box-shadow 0.1s ease,
+        opacity 0.1s ease, background 0.1s ease;
+      box-shadow: 0 10px 20px rgba(37, 99, 235, 0.35);
+    }
+
+    button.secondary {
+      background: #111827;
+      box-shadow: none;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    button:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(56, 189, 248, 0.35);
+    }
+
+    .display {
+      border-radius: 20px;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.9);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .sentence-row-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+      margin-bottom: 2px;
+    }
+
+    .sentence-row {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #020617;
+      border: 1px solid #111827;
+      min-height: 40px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      color: #e5e7eb;
+      overflow-wrap: break-word;
+    }
+
+    .center-row {
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 600px;
+      border-radius: 20px;
+      background: radial-gradient(circle at top, #111827 0, #020617 60%);
+      border: 1px solid #1f2937;
+      padding: 14px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .card-label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #9ca3af;
+    }
+
+    .current-word {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 600;
+      text-align: center;
+      padding: 16px;
+      border-radius: 16px;
+      background: #020617;
+      border: 1px dashed #1f2937;
+      min-height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f9fafb;
+      letter-spacing: 0.04em;
+    }
+
+    #typingInput {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid #1f2937;
+      background: #020617;
+      color: #f9fafb;
+      padding: 12px 14px;
+      font-size: clamp(1.3rem, 3vw, 1.8rem);
+      text-align: center;
+      outline: none;
+      letter-spacing: 0.08em;
+      text-transform: none;
+    }
+
+    #typingInput::placeholder {
+      color: #4b5563;
+    }
+
+    #typingInput:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.65);
+    }
+
+    .results {
+      border-radius: 16px;
+      padding: 14px 16px 16px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid #1f2937;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .results-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .result-line {
+      font-size: 0.9rem;
+    }
+
+    .result-label {
+      font-weight: 500;
+      color: #9ca3af;
+      margin-right: 6px;
+    }
+
+    .result-text {
+      color: #e5e7eb;
+    }
+
+    .accuracy-pill {
+      align-self: flex-start;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      background: rgba(22, 163, 74, 0.15);
+      border: 1px solid rgba(22, 163, 74, 0.7);
+      color: #bbf7d0;
+      margin-top: 4px;
+    }
+
+    .warning {
+      font-size: 0.8rem;
+      color: #f97316;
+      margin-top: -4px;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 16px;
+        padding: 18px;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Audio Word Typing Trainer</h1>
+      <p class="subtitle">
+        Type a sentence, listen word by word, and type only by looking at the keyboard.
+      </p>
+    </header>
+
+    <section class="controls">
+      <label for="inputSentence" class="sentence-row-label">
+        Your training sentence
+      </label>
+      <textarea
+        id="inputSentence"
+        placeholder="Example: The quick brown fox jumps over the lazy dog."
+      ></textarea>
+
+      <div class="warning" id="speechWarning" style="display:none;">
+        Your browser might not support speech synthesis. Try Chrome / Edge / Safari on desktop.
+      </div>
+
+      <div class="controls-row">
+        <button id="startBtn">▶ Start</button>
+        <button id="resetBtn" class="secondary" disabled>Reset</button>
+      </div>
+    </section>
+
+    <section class="display">
+      <div>
+        <div class="sentence-row-label">Target sentence (what you entered)</div>
+        <div id="targetSentenceDisplay" class="sentence-row">—</div>
+      </div>
+
+      <div class="center-row">
+        <div class="card">
+          <div class="card-label">Current word (spoken aloud)</div>
+          <div id="currentWordDisplay" class="current-word">Press "Start"</div>
+        </div>
+      </div>
+
+      <div class="center-row">
+        <div class="card">
+          <div class="card-label">Your current typing (press Space to submit word)</div>
+          <input
+            id="typingInput"
+            type="text"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="Waiting to start…"
+            disabled
+          />
+        </div>
+      </div>
+
+      <div>
+        <div class="sentence-row-label">Your typed sentence (so far)</div>
+        <div id="typedSentenceDisplay" class="sentence-row">—</div>
+      </div>
+    </section>
+
+    <section class="results" id="results" hidden>
+      <div class="results-title">Session result</div>
+      <div class="result-line">
+        <span class="result-label">Target:</span>
+        <span id="resultTarget" class="result-text"></span>
+      </div>
+      <div class="result-line">
+        <span class="result-label">You typed:</span>
+        <span id="resultTyped" class="result-text"></span>
+      </div>
+      <div id="accuracyPill" class="accuracy-pill" hidden></div>
+    </section>
+  </div>
+
+  <script>
+    const inputSentenceEl = document.getElementById("inputSentence");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    const targetSentenceDisplay = document.getElementById(
+      "targetSentenceDisplay"
+    );
+    const currentWordDisplay = document.getElementById("currentWordDisplay");
+    const typingInput = document.getElementById("typingInput");
+    const typedSentenceDisplay = document.getElementById(
+      "typedSentenceDisplay"
+    );
+    const resultsSection = document.getElementById("results");
+    const resultTarget = document.getElementById("resultTarget");
+    const resultTyped = document.getElementById("resultTyped");
+    const accuracyPill = document.getElementById("accuracyPill");
+    const speechWarning = document.getElementById("speechWarning");
+
+    let words = [];
+    let currentIndex = 0;
+    let typedWords = [];
+    let isRunning = false;
+    let targetSentence = "";
+
+    function browserSupportsSpeech() {
+      return "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+    }
+
+    function speak(text) {
+      if (!browserSupportsSpeech()) {
+        speechWarning.style.display = "block";
+        return;
+      }
+      window.speechSynthesis.cancel(); // stop previous if any
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.rate = 0.9; // slightly slower for clarity
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function updateTypedSentenceDisplay() {
+      const joined = typedWords.join(" ");
+      typedSentenceDisplay.textContent = joined || "—";
+    }
+
+    function showResults() {
+      const userSentence = typedWords.join(" ");
+
+      resultTarget.textContent = targetSentence || "—";
+      resultTyped.textContent = userSentence || "—";
+
+      // Simple word-based accuracy display
+      const targetWords = targetSentence ? targetSentence.trim().split(/\s+/) : [];
+      let correct = 0;
+      const len = Math.max(targetWords.length, typedWords.length);
+      for (let i = 0; i < len; i++) {
+        if (targetWords[i] === typedWords[i]) {
+          correct++;
+        }
+      }
+      let accuracy = 0;
+      if (len > 0) {
+        accuracy = Math.round((correct / len) * 100);
+      }
+
+      if (len > 0) {
+        accuracyPill.textContent = `Approx. word accuracy: ${accuracy}%`;
+        accuracyPill.hidden = false;
+      } else {
+        accuracyPill.hidden = true;
+      }
+
+      resultsSection.hidden = false;
+    }
+
+    function startSession() {
+      const sentence = inputSentenceEl.value.trim();
+      if (!sentence) {
+        alert("Please enter a sentence first.");
+        return;
+      }
+
+      if (!browserSupportsSpeech()) {
+        speechWarning.style.display = "block";
+      } else {
+        speechWarning.style.display = "none";
+      }
+
+      targetSentence = sentence;
+      words = sentence.split(/\s+/); // simple split by whitespace
+      currentIndex = 0;
+      typedWords = [];
+      isRunning = true;
+
+      targetSentenceDisplay.textContent = sentence;
+      typedSentenceDisplay.textContent = "—";
+      currentWordDisplay.textContent = "";
+      resultsSection.hidden = true;
+
+      typingInput.disabled = false;
+      typingInput.placeholder = "Type the spoken word, then press Space…";
+      typingInput.value = "";
+      typingInput.focus();
+
+      startBtn.disabled = true;
+      resetBtn.disabled = false;
+
+      speakNextWord();
+    }
+
+    function speakNextWord() {
+      if (currentIndex >= words.length) {
+        finishSession();
+        return;
+      }
+      const w = words[currentIndex];
+      currentWordDisplay.textContent = w;
+      speak(w);
+    }
+
+    function finishSession() {
+      isRunning = false;
+      currentWordDisplay.textContent = "Done ✅";
+      typingInput.disabled = true;
+      typingInput.placeholder = "Session finished. Press Reset or edit sentence.";
+
+      showResults();
+      startBtn.disabled = false;
+    }
+
+    function resetSession() {
+      if (browserSupportsSpeech()) {
+        window.speechSynthesis.cancel();
+      }
+
+      words = [];
+      currentIndex = 0;
+      typedWords = [];
+      isRunning = false;
+      targetSentence = "";
+
+      targetSentenceDisplay.textContent = "—";
+      currentWordDisplay.textContent = "Press \"Start\"";
+      typedSentenceDisplay.textContent = "—";
+
+      typingInput.value = "";
+      typingInput.disabled = true;
+      typingInput.placeholder = "Waiting to start…";
+
+      resultsSection.hidden = true;
+      accuracyPill.hidden = true;
+
+      startBtn.disabled = false;
+      resetBtn.disabled = true;
+
+      // Keep original textarea content as-is so you can tweak it if you want
+    }
+
+    function handleSpacePressed() {
+      if (!isRunning) return;
+
+      const wordTyped = typingInput.value.trim();
+      typedWords.push(wordTyped);
+      updateTypedSentenceDisplay();
+      typingInput.value = "";
+
+      currentIndex++;
+      speakNextWord();
+    }
+
+    // Event listeners
+    startBtn.addEventListener("click", startSession);
+    resetBtn.addEventListener("click", resetSession);
+
+    typingInput.addEventListener("keydown", (e) => {
+      if (!isRunning) return;
+
+      if (e.key === " " || e.code === "Space") {
+        e.preventDefault(); // don't actually insert a space in the input
+        handleSpacePressed();
+      }
+    });
+
+    // Tiny UX improvement: Ctrl+Enter / Cmd+Enter to start
+    inputSentenceEl.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        startSession();
+      }
+    });
+
+    // Show warning if no speech support
+    if (!browserSupportsSpeech()) {
+      speechWarning.style.display = "block";
+    }
+  </script>
+</body>
+</html>
